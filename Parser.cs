@@ -9,7 +9,6 @@ class Parser
 
     private readonly Token[] _tokens;// todos los tokens se guardan aqui
     private int _posicion;
-
     private List<string> errores = new List<string>();
     public Parser(string texto)
     {
@@ -29,7 +28,7 @@ class Parser
 
     private Token Tomar(int offset)
     {
-        int index = _posicion;
+        int index = _posicion + offset;
         if (index >= _tokens.Length) return _tokens[_tokens.Length - 1];
         else return _tokens[index];
     }
@@ -54,7 +53,22 @@ class Parser
         var final = Match(Tipo_De_Token.Final);
         return new Arbol(errores, expresion, final);
     }
-    private Expresion Parse_Expresion(int parentPrecedence = 0)
+    public Expresion Parse_Expresion()
+    {
+        return Parse_Asignacion();
+    }
+    public Expresion Parse_Asignacion()
+    {
+       if(Tomar(0).Tipo == Tipo_De_Token.Identificador && Tomar(1).Tipo == Tipo_De_Token.Igual)
+       {
+          var identificador = Proximo_Token();
+          var operador = Proximo_Token();
+          var right = Parse_Asignacion();
+          return new Asignacion(identificador, operador, right);
+       }
+       return Parse_Expresion_Binaria();
+    }
+    private Expresion Parse_Expresion_Binaria(int parentPrecedence = 0)
     {
         Expresion left;
         var expresion_unaria = Verificandose.Tipo.Prioridad_Operadores_Unarios();
@@ -62,7 +76,7 @@ class Parser
         if (expresion_unaria != 0 && expresion_unaria >= parentPrecedence)
         {
             var operador = Proximo_Token();
-            var right = Parse_Expresion(expresion_unaria);
+            var right = Parse_Expresion_Binaria(expresion_unaria);
             left = new Expresion_Unaria(operador, right);
         }
         else left = Parseo_Fundamental_Expresion();
@@ -73,7 +87,7 @@ class Parser
             if (precedence == 0 || precedence <= parentPrecedence) break;
 
             var operador = Proximo_Token();
-            var right = Parse_Expresion(precedence);
+            var right = Parse_Expresion_Binaria(precedence);
             left = new Expresion_Binaria(left, operador, right);
         }
         return left;
@@ -96,6 +110,11 @@ class Parser
                     var valor = keyword.Tipo == Tipo_De_Token.True_Keyword;
                     return new Literal(keyword, valor);
                 }
+            case Tipo_De_Token.Identificador:
+                {
+                    var identificador = Proximo_Token();
+                    return new Variable(identificador);
+                }    
             default:
                 {
                     var token_num = Match(Tipo_De_Token.Numero);

@@ -8,10 +8,12 @@ namespace Hulk
     {
         static void Main(string[] args)
         {
+            //Diccionario para guardar variables
+            var variables = new Dictionary<string, Expresion>();
             while (true)
             {
                 Console.Write("> ");
-                string Entrada = " (-1)^2 == 1 || 2 < 1";
+                string Entrada = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(Entrada)) return;
 
                 var Parser = new Parser(Entrada);
@@ -20,7 +22,7 @@ namespace Hulk
                 if (!Arbol.Errores.Any())
                 {
                     var e = new Evaluador(Arbol.Rama);
-                    var resultado = e.Evaluar();
+                    var resultado = e.Evaluar(variables);
                     Console.WriteLine(resultado);
                 }
                 else

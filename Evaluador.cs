@@ -8,17 +8,41 @@ class Evaluador
     {
        this._rama = rama;
     }
-    public object Evaluar()
+    public object Evaluar(Dictionary<string, Expresion> Variables)
     {
-        return Evaluar_Expresion(_rama);
+        return Evaluar_Expresion(_rama, Variables);
     }
-    private object Evaluar_Expresion(Expresion nodo)
+    private object Evaluar_Expresion(Expresion nodo, Dictionary<string, Expresion> Variables)
     {
         if(nodo is Literal n) return n.Valor;
+        
+        if(nodo is Variable v)
+        {
+           var key =  Variables[v.Identificador.Texto];
+           var valor = Evaluar_Expresion(key, Variables);
+           return valor;
+        } 
+
+        if(nodo is Asignacion a)
+        {
+            if(!Variables.ContainsKey(a.Identificador.Texto))
+            {
+                var valor = Evaluar_Expresion(a._expresion, Variables);
+                Variables.Add(a.Identificador.Texto, a._expresion);
+                return valor;
+            }
+            else
+            {
+                var valor = Evaluar_Expresion(a._expresion, Variables);
+                Variables[a.Identificador.Texto] = a._expresion;
+                return valor;
+            }
+             
+        }
 
         if(nodo is Expresion_Unaria u)
         {
-            var right = Evaluar_Expresion(u.Right);
+            var right = Evaluar_Expresion(u.Right, Variables);
 
             switch(u.Operador.Tipo)
             {   
@@ -33,8 +57,8 @@ class Evaluador
         }
         if(nodo is Expresion_Binaria b)
         {
-            var left =  Evaluar_Expresion(b.Left);
-            var right = Evaluar_Expresion(b.Right);
+            var left =  Evaluar_Expresion(b.Left, Variables);
+            var right = Evaluar_Expresion(b.Right, Variables);
 
             switch(b.Operador.Tipo)
             {
@@ -64,7 +88,7 @@ class Evaluador
             }
         }
 
-        if(nodo is Parentesis p) return Evaluar_Expresion(p.Expresion);
+        if(nodo is Parentesis p) return Evaluar_Expresion(p.Expresion, Variables);
         
         throw new Exception ($"Nodo inesperado: {nodo.Tipo}");
     }

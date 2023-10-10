@@ -47,9 +47,8 @@ class Analizador_lexico
             while (char.IsLetter(charete)) Siguiente();
             int final = _posicion - inicio;
             string fragmento = texto.Substring(inicio, final);
-            int.TryParse(fragmento, out var valor);
             var tipo = Keyword.Tipo(fragmento);
-            return new Token(tipo, _posicion, texto, valor);
+            return new Token(tipo, _posicion, fragmento, null);
         }
         switch (charete)
         {
