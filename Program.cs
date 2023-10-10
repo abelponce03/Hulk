@@ -11,22 +11,21 @@ namespace Hulk
             while (true)
             {
                 Console.Write("> ");
-                string Entrada = "--(1 + (2 * 3)) * -3";
+                string Entrada = " (-1)^2 == 1 || 2 < 1";
                 if (string.IsNullOrWhiteSpace(Entrada)) return;
-                
+
                 var Parser = new Parser(Entrada);
                 var Arbol = Parser.Parse();
-                var color = Console.ForegroundColor;
 
-                if(!Arbol.Errores.Any())
+                if (!Arbol.Errores.Any())
                 {
-                   var e = new Evaluador(Arbol.Rama);
-                   var resultado = e.Evaluar();
-                   Console.WriteLine(resultado);
+                    var e = new Evaluador(Arbol.Rama);
+                    var resultado = e.Evaluar();
+                    Console.WriteLine(resultado);
                 }
                 else
-                {    
-                    foreach(var error in Arbol.Errores)
+                {
+                    foreach (var error in Arbol.Errores)
                     {
                         Console.WriteLine(error);
                     }

@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Hulk;
 class Evaluador
 { 
@@ -6,35 +8,60 @@ class Evaluador
     {
        this._rama = rama;
     }
-    public int Evaluar()
+    public object Evaluar()
     {
         return Evaluar_Expresion(_rama);
     }
-    private int Evaluar_Expresion(Expresion nodo)
+    private object Evaluar_Expresion(Expresion nodo)
     {
-        //binaria
-        //numero
-        if(nodo is Literal n) return (int) n._Literal.Valor;
+        if(nodo is Literal n) return n.Valor;
 
         if(nodo is Expresion_Unaria u)
         {
             var right = Evaluar_Expresion(u.Right);
-            if(u.Operador.Tipo == Tipo_De_Token.Suma) return right;
 
-            else if(u.Operador.Tipo == Tipo_De_Token.Resta) return -right;
+            switch(u.Operador.Tipo)
+            {   
+                case Tipo_De_Token.Suma: return (double) right;
+                
+                case Tipo_De_Token.Resta: return -(double) right;
 
-            else throw new Exception($"Expresion unaria inesperada:{u.Operador.Tipo}");
-            
+                case Tipo_De_Token.Bang: return !(bool) right;
+
+                default: throw new Exception($"Expresion unaria inesperada:{u.Operador.Tipo}");
+            }            
         }
         if(nodo is Expresion_Binaria b)
         {
-            var left = Evaluar_Expresion(b.Left);
+            var left =  Evaluar_Expresion(b.Left);
             var right = Evaluar_Expresion(b.Right);
-            if(b.Operador.Tipo == Tipo_De_Token.Suma) return left + right;
-            else if(b.Operador.Tipo == Tipo_De_Token.Resta) return left - right;
-            else if(b.Operador.Tipo == Tipo_De_Token.Producto) return left * right;
-            else if(b.Operador.Tipo == Tipo_De_Token.Division) return left / right;
-            else throw new Exception($"Operador inesperado: {b.Operador.Tipo}");
+
+            switch(b.Operador.Tipo)
+            {
+                case Tipo_De_Token.Suma: return (double) left + (double) right;
+
+                case Tipo_De_Token.Resta: return (double) left - (double) right;
+
+                case Tipo_De_Token.Producto: return (double) left * (double) right;
+
+                case Tipo_De_Token.Division: return (double) left / (double) right;
+
+                case Tipo_De_Token.Potenciacion: return Math.Pow((double) left, (double) right);
+
+                case Tipo_De_Token.AmpersandAmpersand: return (bool) left && (bool) right;
+
+                case Tipo_De_Token.PipePipe: return (bool) left || (bool) right;
+
+                case Tipo_De_Token.Menor_que: return (double) left < (double) right;
+
+                case Tipo_De_Token.Mayor_que: return (double) left > (double) right;
+
+                case Tipo_De_Token.IgualIgual: return Equals(left,right);
+
+                case Tipo_De_Token.Bang_Igual: return !Equals(left,right);
+
+                default: throw new Exception($"Operador inesperado: {b.Operador.Tipo}");
+            }
         }
 
         if(nodo is Parentesis p) return Evaluar_Expresion(p.Expresion);

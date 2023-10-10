@@ -57,7 +57,7 @@ class Parser
     private Expresion Parse_Expresion(int parentPrecedence = 0)
     {
         Expresion left;
-        var expresion_unaria = Verificandose.Tipo.Precedencia_Operadores_Unarios();
+        var expresion_unaria = Verificandose.Tipo.Prioridad_Operadores_Unarios();
 
         if (expresion_unaria != 0 && expresion_unaria >= parentPrecedence)
         {
@@ -69,7 +69,7 @@ class Parser
 
         while (true)
         {
-            var precedence = Verificandose.Tipo.Precedencia_Operadores_Binarios();
+            var precedence = Verificandose.Tipo.Prioridad_Operadores_Binarios();
             if (precedence == 0 || precedence <= parentPrecedence) break;
 
             var operador = Proximo_Token();
@@ -80,14 +80,28 @@ class Parser
     }
     private Expresion Parseo_Fundamental_Expresion()
     {
-        if (Verificandose.Tipo == Tipo_De_Token.Parentesis_Abierto)
+        switch (Verificandose.Tipo)
         {
-            var left = Proximo_Token();
-            var expresion = Parse_Expresion();
-            var right = Match(Tipo_De_Token.Parentesis_Cerrado);
-            return new Parentesis(left, expresion, right);
+            case Tipo_De_Token.Parentesis_Abierto:
+                {
+                    var left = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    var right = Match(Tipo_De_Token.Parentesis_Cerrado);
+                    return new Parentesis(left, expresion, right);
+                }
+            case Tipo_De_Token.True_Keyword:
+            case Tipo_De_Token.False_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    var valor = keyword.Tipo == Tipo_De_Token.True_Keyword;
+                    return new Literal(keyword, valor);
+                }
+            default:
+                {
+                    var token_num = Match(Tipo_De_Token.Numero);
+                    var valor = token_num.Valor;
+                    return new Literal(token_num, valor);
+                }
         }
-        var token_num = Match(Tipo_De_Token.Numero);
-        return new Literal(token_num);
     }
 }
