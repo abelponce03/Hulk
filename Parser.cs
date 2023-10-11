@@ -59,14 +59,14 @@ class Parser
     }
     public Expresion Parse_Asignacion()
     {
-       if(Tomar(0).Tipo == Tipo_De_Token.Identificador && Tomar(1).Tipo == Tipo_De_Token.Igual)
-       {
-          var identificador = Proximo_Token();
-          var operador = Proximo_Token();
-          var right = Parse_Asignacion();
-          return new Asignacion(identificador, operador, right);
-       }
-       return Parse_Expresion_Binaria();
+        if (Tomar(0).Tipo == Tipo_De_Token.Identificador && Tomar(1).Tipo == Tipo_De_Token.Igual)
+        {
+            var identificador = Proximo_Token();
+            var operador = Proximo_Token();
+            var right = Parse_Asignacion();
+            return new Asignacion(identificador, operador, right);
+        }
+        return Parse_Expresion_Binaria();
     }
     private Expresion Parse_Expresion_Binaria(int parentPrecedence = 0)
     {
@@ -114,6 +114,34 @@ class Parser
                 {
                     var identificador = Proximo_Token();
                     return new Variable(identificador);
+                }
+            case Tipo_De_Token.if_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    var parentesis = Parse_Expresion();
+                    if(parentesis.Tipo != Tipo_De_Token.Parentesis)
+                    errores.Add($"ERROR: Se esperaba expresion con parentesis {parentesis}");
+                    var expresion = Parse_Expresion();
+                    var _else = Parse_Expresion();
+                    if(_else.Tipo != Tipo_De_Token.else_Expresion)  
+                    errores.Add($"ERROR: Token incorrecto <{_else.Tipo}>, se esperaba else_Expresion");
+                    return new IF(keyword, parentesis, expresion, _else);  
+                }
+            case Tipo_De_Token.else_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if(expresion.Tipo != Tipo_De_Token.Parentesis)
+                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion}");
+                    return new Else(keyword, expresion);
+                }
+            case Tipo_De_Token.print_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if(expresion.Tipo != Tipo_De_Token.Parentesis)
+                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion}");
+                    return new Print(keyword, expresion);
                 }    
             default:
                 {

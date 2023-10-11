@@ -28,6 +28,9 @@ enum Tipo_De_Token
     //Keywords
     True_Keyword,
     False_Keyword,
+    if_Keyword,
+    else_Keyword,
+    print_Keyword,
 
     //Expresiones
     Parentesis,
@@ -36,5 +39,8 @@ enum Tipo_De_Token
     Literal,
     Variable,
     Asignacion,
+    if_Expresion,
+    else_Expresion,
+    Print_Expresion,
 
 }

@@ -16,6 +16,12 @@ class Evaluador
     {
         if(nodo is Literal n) return n.Valor;
         
+        if(nodo is Print t)
+        {
+            var valor = Evaluar_Expresion(t._expresion, Variables);
+            return valor;
+        } 
+
         if(nodo is Variable v)
         {
            var key =  Variables[v.Identificador.Texto];
@@ -38,6 +44,19 @@ class Evaluador
                 return valor;
             }
              
+        }
+        if(nodo is IF i)
+        {
+           var condicion = Evaluar_Expresion(i.Condicion, Variables);
+           var valor = Evaluar_Expresion(i._expresion, Variables);
+           var _else = Evaluar_Expresion(i._Else, Variables);
+           if((bool) condicion) return valor;
+           else return _else;   
+        } 
+        if(nodo is Else e)
+        {
+            var valor = Evaluar_Expresion(e._expresion, Variables);
+            return valor;
         }
 
         if(nodo is Expresion_Unaria u)
