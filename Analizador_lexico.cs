@@ -34,12 +34,22 @@ class Analizador_lexico
 
         int inicio = _posicion;
 
+        //problemas con string
+        if(charete == '"')
+        {
+            while(charete != '"') Siguiente();
+            int final = _posicion - inicio;
+            string fragmento = texto.Substring(inicio, final);
+            return new Token (Tipo_De_Token.String, _posicion, fragmento, fragmento);
+        }
+
         if (char.IsDigit(charete))
         {
+
             while (char.IsDigit(charete)) Siguiente();
             int final = _posicion - inicio;
             string fragmento = texto.Substring(inicio, final);
-            double.TryParse(fragmento, out var valor);
+            double.TryParse(fragmento, out double valor);
             return new Token(Tipo_De_Token.Numero, _posicion, fragmento, valor);
         }
         if (char.IsLetter(charete))

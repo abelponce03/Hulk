@@ -5,6 +5,7 @@ enum Tipo_De_Token
 {
     //tokens
     Numero,
+    String,
     Suma,
     Resta,
     Producto,
@@ -31,6 +32,8 @@ enum Tipo_De_Token
     if_Keyword,
     else_Keyword,
     print_Keyword,
+    let_Keyword,
+    in_Keyword,
 
     //Expresiones
     Parentesis,
@@ -42,5 +45,8 @@ enum Tipo_De_Token
     if_Expresion,
     else_Expresion,
     Print_Expresion,
+    String_Expresion,
+    let_Expresion,
+    in_Expresion,
 
 }

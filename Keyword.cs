@@ -15,7 +15,11 @@ class Keyword
             case "else":
                 return Tipo_De_Token.else_Keyword;   
             case "print":
-                return Tipo_De_Token.print_Keyword;    
+                return Tipo_De_Token.print_Keyword;
+            case "let":
+                return Tipo_De_Token.let_Keyword;
+            case "in":
+                return Tipo_De_Token.in_Keyword;        
             default:
                 return Tipo_De_Token.Identificador;
         }

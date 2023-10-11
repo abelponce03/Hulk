@@ -120,7 +120,7 @@ class Parser
                     var keyword = Proximo_Token();
                     var parentesis = Parse_Expresion();
                     if(parentesis.Tipo != Tipo_De_Token.Parentesis)
-                    errores.Add($"ERROR: Se esperaba expresion con parentesis {parentesis}");
+                    errores.Add($"ERROR: Se esperaba expresion con parentesis {parentesis.Tipo}");
                     var expresion = Parse_Expresion();
                     var _else = Parse_Expresion();
                     if(_else.Tipo != Tipo_De_Token.else_Expresion)  
@@ -131,8 +131,6 @@ class Parser
                 {
                     var keyword = Proximo_Token();
                     var expresion = Parse_Expresion();
-                    if(expresion.Tipo != Tipo_De_Token.Parentesis)
-                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion}");
                     return new Else(keyword, expresion);
                 }
             case Tipo_De_Token.print_Keyword:
@@ -140,9 +138,32 @@ class Parser
                     var keyword = Proximo_Token();
                     var expresion = Parse_Expresion();
                     if(expresion.Tipo != Tipo_De_Token.Parentesis)
-                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion}");
+                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion.Tipo}");
                     return new Print(keyword, expresion);
-                }    
+                }
+            case Tipo_De_Token.String:
+                {
+                    var keyword = Proximo_Token();
+                    var valor = keyword.Texto;
+                    return new Literal(keyword, valor);
+                }
+            case Tipo_De_Token.let_Keyword:
+                {
+                   var keyword = Proximo_Token();
+                   var asignar = Parse_Expresion();
+                   if(asignar.Tipo != Tipo_De_Token.Asignacion)
+                    errores.Add($"ERROR: Se esperaba una asignacion de variable {asignar.Tipo}");
+                   var IN = Parse_Expresion();
+                   if(IN.Tipo != Tipo_De_Token.in_Expresion)
+                    errores.Add($"ERROR: Se esperaba una declaracion de contexto {IN.Tipo}");
+                   return new Let(keyword, asignar, IN);
+                }
+            case Tipo_De_Token.in_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    return new In(keyword, expresion);
+                }                
             default:
                 {
                     var token_num = Match(Tipo_De_Token.Numero);
