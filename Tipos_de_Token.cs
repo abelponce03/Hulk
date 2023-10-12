@@ -6,6 +6,7 @@ enum Tipo_De_Token
     //tokens
     Numero,
     String,
+    coma,
     Suma,
     Resta,
     Producto,
@@ -15,6 +16,7 @@ enum Tipo_De_Token
     Parentesis_Cerrado,
     Bang,
     Igual,
+    Implicacion,
     AmpersandAmpersand,
     PipePipe,
     Menor_que,
@@ -23,6 +25,7 @@ enum Tipo_De_Token
     Bang_Igual,
     Espacio,
     Malo,
+    cierre,
     Final,
     Identificador,
 
@@ -34,6 +37,11 @@ enum Tipo_De_Token
     print_Keyword,
     let_Keyword,
     in_Keyword,
+    sen_Keyword,
+    cos_Keyword,
+    PI_Keyword,
+    function_Keyword,
+    logaritmo_Keyword,
 
     //Expresiones
     Parentesis,
@@ -45,8 +53,13 @@ enum Tipo_De_Token
     if_Expresion,
     else_Expresion,
     Print_Expresion,
-    String_Expresion,
     let_Expresion,
     in_Expresion,
+    sen_Expresion,
+    cos_Expresion,
+    function_Expresion,
+    coma_Expresion,
+    parametros_Expresion,
+    logaritmo_Expresion,
 
 }

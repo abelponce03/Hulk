@@ -118,14 +118,22 @@ class Parser
             case Tipo_De_Token.if_Keyword:
                 {
                     var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
                     var parentesis = Parse_Expresion();
-                    if(parentesis.Tipo != Tipo_De_Token.Parentesis)
-                    errores.Add($"ERROR: Se esperaba expresion con parentesis {parentesis.Tipo}");
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
                     var _else = Parse_Expresion();
-                    if(_else.Tipo != Tipo_De_Token.else_Expresion)  
-                    errores.Add($"ERROR: Token incorrecto <{_else.Tipo}>, se esperaba else_Expresion");
-                    return new IF(keyword, parentesis, expresion, _else);  
+                    if (_else.Tipo != Tipo_De_Token.else_Expresion)
+                        errores.Add($"ERROR: Token incorrecto <{_else.Tipo}>, se esperaba else_Expresion");
+                    return new IF(keyword, op_parentesis, parentesis, cl_parentesis, expresion, _else);
                 }
             case Tipo_De_Token.else_Keyword:
                 {
@@ -136,34 +144,131 @@ class Parser
             case Tipo_De_Token.print_Keyword:
                 {
                     var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
-                    if(expresion.Tipo != Tipo_De_Token.Parentesis)
-                    errores.Add($"ERROR: Se esperaba expresion con parentesis {expresion.Tipo}");
-                    return new Print(keyword, expresion);
-                }
-            case Tipo_De_Token.String:
-                {
-                    var keyword = Proximo_Token();
-                    var valor = keyword.Texto;
-                    return new Literal(keyword, valor);
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
+                    return new Print(keyword, op_parentesis, expresion, cl_parentesis);
                 }
             case Tipo_De_Token.let_Keyword:
                 {
-                   var keyword = Proximo_Token();
-                   var asignar = Parse_Expresion();
-                   if(asignar.Tipo != Tipo_De_Token.Asignacion)
-                    errores.Add($"ERROR: Se esperaba una asignacion de variable {asignar.Tipo}");
-                   var IN = Parse_Expresion();
-                   if(IN.Tipo != Tipo_De_Token.in_Expresion)
-                    errores.Add($"ERROR: Se esperaba una declaracion de contexto {IN.Tipo}");
-                   return new Let(keyword, asignar, IN);
+                    var keyword = Proximo_Token();
+                    var asignar = Parse_Expresion();
+                    if (asignar.Tipo != Tipo_De_Token.Asignacion)
+                        errores.Add($"ERROR: Se esperaba una asignacion de variable {asignar.Tipo}");
+                    var IN = Parse_Expresion();
+                    if (IN.Tipo != Tipo_De_Token.in_Expresion)
+                        errores.Add($"ERROR: Se esperaba una declaracion de contexto {IN.Tipo}");
+                    return new Let(keyword, asignar, IN);
                 }
             case Tipo_De_Token.in_Keyword:
                 {
                     var keyword = Proximo_Token();
                     var expresion = Parse_Expresion();
                     return new In(keyword, expresion);
-                }                
+                }
+            case Tipo_De_Token.PI_Keyword:
+                {
+                    var PI = Match(Tipo_De_Token.PI_Keyword);
+                    var valor = Math.PI;
+                    return new Literal(PI, valor);
+                }
+            case Tipo_De_Token.String:
+                {
+                    var keyword = Match(Tipo_De_Token.String);
+                    var valor = keyword.Texto;
+                    return new Literal(keyword, valor);
+                }
+            case Tipo_De_Token.sen_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
+                    return new Sen(keyword, op_parentesis, expresion, cl_parentesis);
+                }
+            case Tipo_De_Token.cos_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
+                    return new Cos(keyword, op_parentesis, expresion, cl_parentesis);
+                }
+            case Tipo_De_Token.logaritmo_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
+                    return new Logaritmo(keyword, op_parentesis, expresion, cl_parentesis);
+                }
+            case Tipo_De_Token.function_Keyword:
+                {
+                    var keyword = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Identificador)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Identificador}");
+                    }
+                    var identificador = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Abierto}");
+                    }
+                    var op_parentesis = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Parentesis_Cerrado}");
+                    }
+                    var cl_parentesis = Proximo_Token();
+                    if (Verificandose.Tipo != Tipo_De_Token.Implicacion)
+                    {
+                        errores.Add($"ERROR: Inesperado {Verificandose.Tipo}, se esperaba {Tipo_De_Token.Implicacion}");
+                    }
+                    var implicacion = Proximo_Token();
+                    var funcion = Parse_Expresion();
+                    return new Function(keyword, identificador, op_parentesis, expresion, cl_parentesis, implicacion, funcion);
+                }
+            case Tipo_De_Token.coma:
+                {
+                    var token = Proximo_Token();
+                    var expresion = Parse_Expresion();
+                    if (expresion is null)
+                        errores.Add($"ERROR: Esta expresion no puede ser nula");
+                    return new Coma(token, expresion);
+                }
             default:
                 {
                     var token_num = Match(Tipo_De_Token.Numero);

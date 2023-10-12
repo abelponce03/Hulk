@@ -19,7 +19,17 @@ class Keyword
             case "let":
                 return Tipo_De_Token.let_Keyword;
             case "in":
-                return Tipo_De_Token.in_Keyword;        
+                return Tipo_De_Token.in_Keyword;
+            case "sen":
+                return Tipo_De_Token.sen_Keyword;
+            case "cos":
+                return Tipo_De_Token.cos_Keyword;
+            case "PI":
+                return Tipo_De_Token.PI_Keyword; 
+            case "function":
+                return Tipo_De_Token.function_Keyword;
+            case "log":
+                return Tipo_De_Token.logaritmo_Keyword;                          
             default:
                 return Tipo_De_Token.Identificador;
         }

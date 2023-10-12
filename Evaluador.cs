@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Hulk;
@@ -8,37 +9,56 @@ class Evaluador
     {
         this._rama = rama;
     }
-    public object Evaluar(Dictionary<string, Expresion> Variables)
+    public object Evaluar(Dictionary<string, Expresion> Variables, Dictionary<string, Expresion> Funciones)
     {
-        return Evaluar_Expresion(_rama, Variables);
+        return Evaluar_Expresion(_rama, Variables, Funciones);
     }
-    private object Evaluar_Expresion(Expresion nodo, Dictionary<string, Expresion> Variables)
+    private object Evaluar_Expresion(Expresion nodo, Dictionary<string, Expresion> Variables, Dictionary<string, Expresion> Funciones)
     {
         if (nodo is Literal n) return n.Valor;
 
+        if (nodo is Coma c)
+        {
+            var valor = Evaluar_Expresion(c._expresion, Variables, Funciones);
+            return valor;
+        }
+
+        if (nodo is Sen x)
+        {
+            var expresion = Evaluar_Expresion(x._expresion, Variables, Funciones);
+            var valor = Math.Sin((double)expresion);
+            return valor;
+        }
+        if (nodo is Cos y)
+        {
+            var expresion = Evaluar_Expresion(y._expresion, Variables, Funciones);
+            var valor = Math.Cos((double)expresion);
+            return valor;
+        }
+
         if (nodo is Let l)
         {
-            var asignar = Evaluar_Expresion(l.Asignar, Variables);
-            var IN = Evaluar_Expresion(l._IN, Variables);
+            var asignar = Evaluar_Expresion(l.Asignar, Variables, Funciones);
+            var IN = Evaluar_Expresion(l._IN, Variables, Funciones);
             return IN;
         }
 
         if (nodo is In h)
         {
-            var valor = Evaluar_Expresion(h._expresion, Variables);
+            var valor = Evaluar_Expresion(h._expresion, Variables, Funciones);
             return valor;
         }
 
         if (nodo is Print t)
         {
-            var valor = Evaluar_Expresion(t._expresion, Variables);
+            var valor = Evaluar_Expresion(t._expresion, Variables, Funciones);
             return valor;
         }
 
         if (nodo is Variable v)
         {
             var key = Variables[v.Identificador.Texto];
-            var valor = Evaluar_Expresion(key, Variables);
+            var valor = Evaluar_Expresion(key, Variables, Funciones);
             return valor;
         }
 
@@ -46,35 +66,57 @@ class Evaluador
         {
             if (!Variables.ContainsKey(a.Identificador.Texto))
             {
-                var valor = Evaluar_Expresion(a._expresion, Variables);
+                var valor = Evaluar_Expresion(a._expresion, Variables, Funciones);
                 Variables.Add(a.Identificador.Texto, a._expresion);
                 return valor;
             }
             else
             {
-                var valor = Evaluar_Expresion(a._expresion, Variables);
+                var valor = Evaluar_Expresion(a._expresion, Variables, Funciones);
                 Variables[a.Identificador.Texto] = a._expresion;
                 return valor;
             }
 
         }
+        if (nodo is Function f)
+        {
+            if (!Funciones.ContainsKey(f.Identificador.Texto))
+            {
+                var valor = Evaluar_Expresion(f.Funcion, Variables, Funciones);
+                Funciones.Add(f.Identificador.Texto, f.Funcion);
+                return valor;
+            }
+            else
+            {
+                var valor = Evaluar_Expresion(f.Funcion, Variables, Funciones);
+                Funciones[f.Identificador.Texto] = f.Funcion;
+                return valor;
+            }
+        }
+        if (nodo is Logaritmo r)
+        {
+            var expresion = Evaluar_Expresion(r._expresion, Variables, Funciones);
+            var valor = Math.Log((double)expresion);
+            return valor;
+        }
+        
         if (nodo is IF i)
         {
-            var condicion = Evaluar_Expresion(i.Condicion, Variables);
-            var valor = Evaluar_Expresion(i._expresion, Variables);
-            var _else = Evaluar_Expresion(i._Else, Variables);
+            var condicion = Evaluar_Expresion(i.Condicion, Variables, Funciones);
+            var valor = Evaluar_Expresion(i._expresion, Variables, Funciones);
+            var _else = Evaluar_Expresion(i._Else, Variables, Funciones);
             if ((bool)condicion) return valor;
             else return _else;
         }
         if (nodo is Else e)
         {
-            var valor = Evaluar_Expresion(e._expresion, Variables);
+            var valor = Evaluar_Expresion(e._expresion, Variables, Funciones);
             return valor;
         }
 
         if (nodo is Expresion_Unaria u)
         {
-            var right = Evaluar_Expresion(u.Right, Variables);
+            var right = Evaluar_Expresion(u.Right, Variables, Funciones);
 
             switch (u.Operador.Tipo)
             {
@@ -89,8 +131,8 @@ class Evaluador
         }
         if (nodo is Expresion_Binaria b)
         {
-            var left = Evaluar_Expresion(b.Left, Variables);
-            var right = Evaluar_Expresion(b.Right, Variables);
+            var left = Evaluar_Expresion(b.Left, Variables, Funciones);
+            var right = Evaluar_Expresion(b.Right, Variables, Funciones);
 
             switch (b.Operador.Tipo)
             {
@@ -120,7 +162,7 @@ class Evaluador
             }
         }
 
-        if (nodo is Parentesis p) return Evaluar_Expresion(p.Expresion, Variables);
+        if (nodo is Parentesis p) return Evaluar_Expresion(p.Expresion, Variables, Funciones);
 
         throw new Exception($"Nodo inesperado: {nodo.Tipo}");
     }

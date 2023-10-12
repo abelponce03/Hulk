@@ -10,6 +10,7 @@ namespace Hulk
         {
             //Diccionario para guardar variables
             var variables = new Dictionary<string, Expresion>();
+            var funciones = new Dictionary<string, Expresion>();
             while (true)
             {
                 Console.Write("> ");
@@ -22,7 +23,7 @@ namespace Hulk
                 if (!Arbol.Errores.Any())
                 {
                     var e = new Evaluador(Arbol.Rama);
-                    var resultado = e.Evaluar(variables);
+                    var resultado = e.Evaluar(variables, funciones);
                     Console.WriteLine(resultado);
                 }
                 else

@@ -79,6 +79,10 @@ class Analizador_lexico
             case '<': return new Token(Tipo_De_Token.Menor_que, _posicion += 2, "<", null);
 
             case '>': return new Token(Tipo_De_Token.Mayor_que, _posicion += 2, ">", null);
+
+            case ',': return new Token(Tipo_De_Token.coma, _posicion++, ",", null);
+
+            case ';': return new Token(Tipo_De_Token.cierre, _posicion++, ";", null); 
                   
             case '=':
                 {
@@ -86,6 +90,11 @@ class Analizador_lexico
                     {
                         _posicion += 2;
                         return new Token(Tipo_De_Token.IgualIgual, inicio , "==", null);
+                    }
+                    else if(Siguiente_char == '>')
+                    {
+                        _posicion += 2;
+                        return new Token(Tipo_De_Token.Implicacion, inicio, "=>", null);
                     }
                     else return new Token(Tipo_De_Token.Igual, _posicion++, "=", null);
                 }
