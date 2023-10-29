@@ -8,8 +8,6 @@ namespace Hulk
     {
         static void Main(string[] args)
         {
-            //Diccionario para guardar variables
-            var variables = new Dictionary<string, Expresion>();
             var funciones = new Dictionary<string, Expresion>();
             while (true)
             {
@@ -20,17 +18,30 @@ namespace Hulk
                 var Parser = new Parser(Entrada);
                 var Arbol = Parser.Parse();
 
+
                 if (!Arbol.Errores.Any())
                 {
-                    var e = new Evaluador(Arbol.Rama);
-                    var resultado = e.Evaluar(variables, funciones);
-                    Console.WriteLine(resultado);
+                    try
+                    {
+                        if (Arbol.Rama is Declaracion_Funcion)
+                        {
+                            continue;
+                        }
+                        var e = new Evaluador(Arbol.Rama);
+                        var resultado = e.Evaluar();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
                 }
                 else
                 {
                     foreach (var error in Arbol.Errores)
                     {
                         Console.WriteLine(error);
+                        break;
                     }
                 }
             }

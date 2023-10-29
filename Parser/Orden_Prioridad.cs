@@ -29,7 +29,9 @@ internal static class Prioridad
                 return 4;
             
             case Tipo_De_Token.Menor_que:
+            case Tipo_De_Token.Menor_igual_que:
             case Tipo_De_Token.Mayor_que:
+            case Tipo_De_Token.Mayor_igual_que:
             case Tipo_De_Token.Bang_Igual:
             case Tipo_De_Token.IgualIgual:
                 return 3;

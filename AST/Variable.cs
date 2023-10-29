@@ -5,8 +5,6 @@ sealed class Variable : Expresion
     {
        Identificador = identificador;
     }
-
     public override Tipo_De_Token Tipo => Tipo_De_Token.Variable;
     public Token Identificador {get;}
-    
 }
