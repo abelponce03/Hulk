@@ -43,24 +43,13 @@ class Analizador_lexico
                 string fragmento = texto.Substring(inicio + 1, final - 1);
                 return new Token(Tipo_De_Token.String, _posicion++, fragmento, fragmento);
             }
-            errores.Add($"! SINTAX ERROR : Expected in string expresion close '<\">' in position  <{_posicion}>");
+            errores.Add($"! SINTAX ERROR : Expected in string expresion close <\"> in position  <{_posicion}>");
             _posicion = inicio;
         }
 
         if (char.IsDigit(charete))
         {
-
-            int count = 0;
-            while (char.IsDigit(charete) || charete == ',')
-            {
-                if (charete == ',')
-                {
-                    count++;
-                    if (!char.IsDigit(Tomar(1))) errores.Add($"! SINTAX ERROR : Invalid Token <{texto.Substring(inicio, _posicion - inicio + 1)}> in position <{_posicion}> is not a number");
-                }
-                if (count > 1) errores.Add($"! SINTAX ERROR : Invalid Token <{texto.Substring(inicio, _posicion - inicio + 1)}> in position <{_posicion}> is not a number");
-                Siguiente();
-            }
+            while (char.IsDigit(charete))  Siguiente();
             int final = _posicion - inicio;
             string fragmento = texto.Substring(inicio, final);
             double.TryParse(fragmento, out var valor);
@@ -96,10 +85,13 @@ class Analizador_lexico
 
             case '|': return new Token(Tipo_De_Token.PipePipe, _posicion++, "|", null);
 
+            case '@': return new Token(Tipo_De_Token.concatenacion,_posicion++, "@", null);
+
+            case '%': return new Token(Tipo_De_Token.resto, _posicion++, "%", null);
+
             case ';':
                 {
-                    if (_posicion < texto.Length - 1) errores.Add($"! SINTAX ERROR : Expected '<{charete}>' in the end of sentence");
-                    return new Token(Tipo_De_Token.cierre, _posicion++, ";", null);
+                    return new Token(Tipo_De_Token.punto_y_coma, _posicion++, ";", null);
                 }
 
             case '<':
@@ -147,7 +139,7 @@ class Analizador_lexico
                     else return new Token(Tipo_De_Token.Bang, _posicion++, "!", null);
                 }
         }
-        errores.Add($"! LEXICAL ERROR : Unexpected Token '{charete}' in position <{_posicion}>");
+        errores.Add($"! LEXICAL ERROR : Unexpected Token <{charete}> in position <{_posicion}>");
 
         return new Token(Tipo_De_Token.Malo, _posicion++, texto.Substring(_posicion - 1, 1), null);
     }

@@ -22,12 +22,14 @@ internal static class Prioridad
                 return 6;
             case Tipo_De_Token.Producto:
             case Tipo_De_Token.Division:
+            case Tipo_De_Token.resto:
                 return 5;
 
             case Tipo_De_Token.Suma:
             case Tipo_De_Token.Resta:
+            case Tipo_De_Token.concatenacion:
                 return 4;
-            
+
             case Tipo_De_Token.Menor_que:
             case Tipo_De_Token.Menor_igual_que:
             case Tipo_De_Token.Mayor_que:

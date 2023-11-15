@@ -19,9 +19,9 @@ class Parser
             token = Analizador.Proximo_Token();
             if (token.Tipo != Tipo_De_Token.Espacio && token.Tipo != Tipo_De_Token.Malo) tokens.Add(token);
         }
-        while (token.Tipo != Tipo_De_Token.cierre && token.Tipo != Tipo_De_Token.Final);
+        while (token.Tipo != Tipo_De_Token.punto_y_coma && token.Tipo != Tipo_De_Token.Final);
         _tokens = tokens.ToArray();
-        if (tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.cierre) errores.Add($"! SINTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 2].Texto}>");
+        if (tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.punto_y_coma) errores.Add($"! SYNTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 1].Texto}>");
         errores.AddRange(Analizador.Error);
     }
 
@@ -43,14 +43,15 @@ class Parser
     public Token Match(Tipo_De_Token tipo)
     {
         if (Verificandose.Tipo == tipo) return Proximo_Token();
-        errores.Add($"! SYNTAX ERROR : Not find {tipo} after {Tomar(-1).Tipo} {Tomar(-1).Texto} in position {_posicion}");
+        else if (_tokens.Length == 1) errores.Add($"! SYNTAX ERROR : Not find <{tipo}> in <{_posicion}>");
+        else errores.Add($"! SYNTAX ERROR : Not find <{tipo}> after <{Tomar(-1).Texto}> in position <{_posicion}>");
         return new Token(tipo, Verificandose.Posicion, null, null);
 
     }
     public Arbol Parse()
     {
         var expresion = Parse_Expresion();
-        var final = Match(Tipo_De_Token.cierre);
+        var final = Match(Tipo_De_Token.punto_y_coma);
         return new Arbol(errores, expresion, final);
     }
     public Expresion Parse_Expresion()
@@ -70,13 +71,13 @@ class Parser
         var cuerpo = Parse_Expresion();
         var declaracion_Funcion = new Declaracion_Funcion(nombre.Texto, parametros, cuerpo);
 
-        if (!Biblioteca.Functions.ContainsKey(nombre.Texto) && errores.Count == 0)
+        if (!Biblioteca.Functions.ContainsKey(nombre.Texto) && errores.Count == 0 && nombre.Texto != "sen(x)" && nombre.Texto != "cos(x)" && nombre.Texto != "log(x)")
         {
             Biblioteca.Functions.Add(nombre.Texto, declaracion_Funcion);
         }
         else
         {
-            errores.Add($"! FUNCTION ERROR : Function {nombre.Texto} is already defined");
+            errores.Add($"! SEMANTIC ERROR : Function <{nombre.Texto}> is already defined");
         }
 
         return declaracion_Funcion;
@@ -101,7 +102,8 @@ class Parser
             }
             if (parametros.Contains(Verificandose.Texto))
             {
-                errores.Add($"! SEMANTIC ERROR : A parameter with the name '{Verificandose.Texto}' already exists insert another parameter name");
+                errores.Add($"! SEMANTIC ERROR : A parameter with the name <'{Verificandose.Texto}'> already exists insert another parameter name");
+
             }
             parametros.Add(Verificandose.Texto);
             Proximo_Token();
@@ -115,8 +117,11 @@ class Parser
         var parametros = new List<Expresion>();
 
         Match(Tipo_De_Token.Parentesis_Abierto);
+
+        int evitar_bucle = 0;
         while (true)
         {
+
             if (Verificandose.Tipo == Tipo_De_Token.Parentesis_Cerrado)
             {
                 break;
@@ -127,24 +132,30 @@ class Parser
             {
                 Proximo_Token();
             }
+            if (evitar_bucle == _posicion)
+            {
+                errores.Add($"! SYNTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
+                break;
+            }
+            evitar_bucle = _posicion;
         }
 
         Match(Tipo_De_Token.Parentesis_Cerrado);
 
         return new LLamada_Funcion(identificador, parametros);
     }
-     private Expresion Parse_Variable_Or_LLamada_Funcion()
+    private Expresion Parse_Variable_Or_LLamada_Funcion()
     {
         if (Verificandose.Tipo == Tipo_De_Token.Identificador
         && Tomar(1).Tipo == Tipo_De_Token.Parentesis_Abierto)
         {
             return Parse_LLamada_Funcion(Verificandose.Texto);
         }
-       else 
-       {
-          var identificador = Proximo_Token();
-          return new Variable(identificador);
-       }
+        else
+        {
+            var identificador = Proximo_Token();
+            return new Variable(identificador);
+        }
     }
     public Expresion Parse_Let_in_Expresion()
     {
@@ -222,13 +233,13 @@ class Parser
                     var keyword = Proximo_Token();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{"("}>  in  position <{_posicion}> before the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{"("}>  in  position <{_posicion}> before the expresion");
                     }
                     var op_parentesis = Proximo_Token();
                     var parentesis = Parse_Expresion();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected {")"} in position <{_posicion}> after the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
                     }
                     var cl_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
@@ -248,13 +259,13 @@ class Parser
                     var keyword = Proximo_Token();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{"("}>  in position <{_posicion}> before the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{"("}>  in position <{_posicion}> before the expresion");
                     }
                     var op_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{")"}>  in position <{_posicion}> after the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{")"}>  in position <{_posicion}> after the expresion");
                     }
                     var cl_parentesis = Proximo_Token();
                     return new Print(keyword, op_parentesis, expresion, cl_parentesis);
@@ -265,9 +276,9 @@ class Parser
                 }
             case Tipo_De_Token.in_Keyword:
                 {
-                    var keyword = Proximo_Token();
+                    var keyword = Match(Tipo_De_Token.in_Keyword);
                     var expresion = Parse_Expresion();
-                    return new In(keyword, expresion);
+                    return new In(expresion);
                 }
             case Tipo_De_Token.PI_Keyword:
                 {
@@ -286,13 +297,13 @@ class Parser
                     var keyword = Proximo_Token();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
                     }
                     var op_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
                     }
                     var cl_parentesis = Proximo_Token();
                     return new Sen(keyword, op_parentesis, expresion, cl_parentesis);
@@ -302,13 +313,13 @@ class Parser
                     var keyword = Proximo_Token();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
                     }
                     var op_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
                     }
                     var cl_parentesis = Proximo_Token();
                     return new Cos(keyword, op_parentesis, expresion, cl_parentesis);
@@ -318,13 +329,13 @@ class Parser
                     var keyword = Proximo_Token();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Abierto)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{"("}> in position <{_posicion}> before the expresion");
                     }
                     var op_parentesis = Proximo_Token();
                     var expresion = Parse_Expresion();
                     if (Verificandose.Tipo != Tipo_De_Token.Parentesis_Cerrado)
                     {
-                        errores.Add($"! SINTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
+                        errores.Add($"! SYNTAX ERROR : Expected <{")"}> in position <{_posicion}> after the expresion");
                     }
                     var cl_parentesis = Proximo_Token();
                     return new Logaritmo(keyword, op_parentesis, expresion, cl_parentesis);

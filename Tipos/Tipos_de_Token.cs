@@ -28,12 +28,13 @@ enum Tipo_De_Token
     Bang_Igual,
     Espacio,
     Malo,
-    cierre,
+    punto_y_coma,
     Final,
     Identificador,
     Declaracion_Funcion,
     LLamada_Funcion,
-    Referencia_Funcion,
+    concatenacion,
+    resto,
 
     //Keywords
     True_Keyword,
@@ -55,7 +56,6 @@ enum Tipo_De_Token
     Expresion_Binaria,
     Literal,
     Variable,
-    Asignacion,
     if_Expresion,
     else_Expresion,
     Print_Expresion,
