@@ -7,7 +7,7 @@ class Analizador_lexico
     private readonly string texto;
     private int _posicion;
     private List<string> errores = new List<string>();
-    public IEnumerable<String> Error => errores;
+    public List<string> Error => errores;
     //constructor de la clase
     public Analizador_lexico(string text)
     {
@@ -43,7 +43,7 @@ class Analizador_lexico
                 string fragmento = texto.Substring(inicio + 1, final - 1);
                 return new Token(Tipo_De_Token.String, _posicion++, fragmento, fragmento);
             }
-            errores.Add($"! SINTAX ERROR : Expected in string expresion close <\"> in position  <{_posicion}>");
+            errores.Add($"! SYNTAX ERROR : Expected in string expresion close <\"> in position  <{_posicion}>");
             _posicion = inicio;
         }
 

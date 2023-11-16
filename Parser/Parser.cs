@@ -17,9 +17,9 @@ class Parser
         do
         {
             token = Analizador.Proximo_Token();
-            if (token.Tipo != Tipo_De_Token.Espacio && token.Tipo != Tipo_De_Token.Malo) tokens.Add(token);
+            if (token.Tipo != Tipo_De_Token.Espacio && token.Tipo != Tipo_De_Token.Malo && token.Tipo != Tipo_De_Token.Final) tokens.Add(token);
         }
-        while (token.Tipo != Tipo_De_Token.punto_y_coma && token.Tipo != Tipo_De_Token.Final);
+        while (token.Tipo != Tipo_De_Token.Final);
         _tokens = tokens.ToArray();
         if (tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.punto_y_coma) errores.Add($"! SYNTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 1].Texto}>");
         errores.AddRange(Analizador.Error);
@@ -52,6 +52,19 @@ class Parser
     {
         var expresion = Parse_Expresion();
         var final = Match(Tipo_De_Token.punto_y_coma);
+        if (_posicion < _tokens.Length - 1)
+        {
+            string fragmento = "";
+            for(int i = _posicion; i < _tokens.Length; i++)
+            {
+                if(i == _tokens.Length - 1)
+                {
+                    fragmento += _tokens[i].Texto;
+                }
+                else fragmento += _tokens[i].Texto + " ";  
+            }
+            errores.Add($"! SYNTAX ERROR : The expression <{fragmento}> does not exist in the curret context");
+        }
         return new Arbol(errores, expresion, final);
     }
     public Expresion Parse_Expresion()
@@ -77,7 +90,7 @@ class Parser
         }
         else
         {
-            errores.Add($"! SEMANTIC ERROR : Function <{nombre.Texto}> is already defined");
+            errores.Add($"! FUNCTION ERROR : Function <{nombre.Texto}> is already defined");
         }
 
         return declaracion_Funcion;
@@ -144,7 +157,7 @@ class Parser
 
         return new LLamada_Funcion(identificador, parametros);
     }
-    private Expresion Parse_Variable_Or_LLamada_Funcion()
+    private Expresion Parse_Variable_O_LLamada_Funcion()
     {
         if (Verificandose.Tipo == Tipo_De_Token.Identificador
         && Tomar(1).Tipo == Tipo_De_Token.Parentesis_Abierto)
@@ -226,7 +239,7 @@ class Parser
                 }
             case Tipo_De_Token.Identificador:
                 {
-                    return Parse_Variable_Or_LLamada_Funcion();
+                    return Parse_Variable_O_LLamada_Funcion();
                 }
             case Tipo_De_Token.if_Keyword:
                 {

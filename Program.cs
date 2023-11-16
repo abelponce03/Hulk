@@ -12,6 +12,7 @@ namespace Hulk
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine($"--------HULK--------");
+
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -28,20 +29,23 @@ namespace Hulk
                     {
                         if (Arbol.Rama is Declaracion_Funcion)
                         {
-                            Biblioteca.Variables.Clear();
                             continue;
                         }
                         var e = new Evaluador(Arbol.Rama);
                         var resultado = e.Evaluar();
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(resultado);
-                        Biblioteca.Variables.Clear();
                     }
                     catch (Exception e)
                     {
                         string[] mensaje = e.ToString().Split();
                         for (int i = 0; i < mensaje.Length; i++)
                         {
+                            if (mensaje[i] == "OVERFLOW")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                break;
+                            }
                             if (mensaje[i] == "SINTAX")
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
@@ -55,6 +59,11 @@ namespace Hulk
                             if (mensaje[i] == "LEXICAL")
                             {
                                 Console.ForegroundColor = ConsoleColor.Blue;
+                                break;
+                            }
+                            if (mensaje[i] == "FUNCTION")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Cyan;
                                 break;
                             }
                         }
@@ -82,6 +91,11 @@ namespace Hulk
                             if (mensaje[i] == "LEXICAL")
                             {
                                 Console.ForegroundColor = ConsoleColor.Blue;
+                                break;
+                            }
+                            if (mensaje[i] == "FUNCTION")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Cyan;
                                 break;
                             }
                         }

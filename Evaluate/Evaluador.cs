@@ -69,12 +69,12 @@ class Evaluador
     {
         if (!Biblioteca.Functions.ContainsKey(f.Nombre))
         {
-            throw new Exception($"! SEMANTIC ERROR : Function <{f.Nombre}> is not defined");
+            throw new Exception($"! FUNCTION ERROR : Function <{f.Nombre}> is not defined");
         }
         var Declaracion_Funcion = Biblioteca.Functions[f.Nombre];
         if (Declaracion_Funcion.Parametros.Count != f.Parametros.Count)
         {
-            throw new Exception($"! SEMANTIC ERROR : Function <{f.Nombre}> does not have <{f.Parametros.Count}> parameters but has <{Biblioteca.Functions[f.Nombre].Parametros.Count}> parameters");
+            throw new Exception($"! FUNCTION ERROR : Function <{f.Nombre}> does not have <{f.Parametros.Count}> parameters but has <{Biblioteca.Functions[f.Nombre].Parametros.Count}> parameters");
         }
         var parameters = f.Parametros;
         var arguments = Declaracion_Funcion.Parametros;
@@ -84,11 +84,11 @@ class Evaluador
 
             if (!Biblioteca.Variables.ContainsKey(arguments[i]))
             {
-                Biblioteca.Variables.Add(arguments[i], parameters[i]);
+                Biblioteca.Variables.Add(arguments[i], Evaluar_Expresion(parameters[i]));
             }
             else
             {
-                Biblioteca.Variables[arguments[i]] = parameters[i];
+                Biblioteca.Variables[arguments[i]] = Evaluar_Expresion(parameters[i]);
             }
         }
 
@@ -154,11 +154,15 @@ class Evaluador
     object Evaluar_If(IF i)
     {
         var condicion = Evaluar_Expresion(i.Condicion);
-        var valor = Evaluar_Expresion(i._expresion);
-        var _else = Evaluar_Expresion(i._Else);
         if (condicion.GetType() != typeof(bool)) throw new Exception("! SEMANTIC ERROR : If-ELSE expressions must have a boolean condition");
-        else if ((bool)condicion) return valor;
-        else return _else;
+
+        var valor = Evaluar_Expresion(i._expresion);
+        if ((bool)condicion) return valor;
+        else
+        {
+            var _else = Evaluar_Expresion(i._Else);
+            return _else;
+        }
     }
     object Evaluar_Expresion_Unaria(Expresion_Unaria u)
     {
@@ -185,7 +189,7 @@ class Evaluador
             case Tipo_De_Token.resto:
                 {
                     Verificar_tipos(b, left, right);
-                    return (double) left % (double) right;
+                    return (double)left % (double)right;
                 }
             case Tipo_De_Token.concatenacion:
                 {
@@ -214,14 +218,14 @@ class Evaluador
             case Tipo_De_Token.Division:
                 {
                     Verificar_tipos(b, left, right);
-                    if ((double)right == 0) throw new Exception("! SEMANTIC ERROR : Cannot divide by zero");
+                    if ((double)right == 0) throw new Exception($"! SEMANTIC ERROR : Cannot divide <{left}> by <{right}>");
                     else return (double)left / (double)right;
                 }
 
             case Tipo_De_Token.Potenciacion:
                 {
                     Verificar_tipos(b, left, right);
-                    if ((double)left == 0 & (double)right == 0) throw new Exception($"! SEMANTIC ERROR : <{left}> pow to <{right}> is not defined");
+                    if ((double)left == 0 && (double)right == 0) throw new Exception($"! SEMANTIC ERROR : <{left}> pow to <{right}> is not defined");
                     else return Math.Pow((double)left, (double)right);
                 }
 

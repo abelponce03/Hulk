@@ -5,13 +5,13 @@ namespace Hulk;
 
 sealed class Arbol
 {
-    public Arbol( IEnumerable<string> error, Expresion rama, Token final)
+    public Arbol( List<string> error, Expresion rama, Token final)
     {
         Rama = rama;
         Final = final;
-        Errores = error.ToArray();
+        Errores = error;
     }
-    public  IReadOnlyList<string> Errores {get;}
+    public  List<string> Errores {get;}
     public Expresion Rama {get;}
     public Token Final {get;}
    
