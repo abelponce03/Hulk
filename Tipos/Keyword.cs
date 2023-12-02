@@ -6,6 +6,10 @@ class Keyword
     {
         switch (texto)
         {
+            case "clean":
+                 return Tipo_De_Token.clean_keyword;
+            case "then":
+                return Tipo_De_Token.then_Keyword;
             case "true":
                 return Tipo_De_Token.True_Keyword;
             case "false":

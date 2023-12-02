@@ -40,6 +40,7 @@ enum Tipo_De_Token
     True_Keyword,
     False_Keyword,
     if_Keyword,
+    then_Keyword,
     else_Keyword,
     print_Keyword,
     let_Keyword,
@@ -49,6 +50,7 @@ enum Tipo_De_Token
     PI_Keyword,
     function_Keyword,
     logaritmo_Keyword,
+    clean_keyword,
 
     //Expresiones
     Parentesis,
@@ -67,5 +69,6 @@ enum Tipo_De_Token
     function_Expresion,
     parametros_Expresion,
     logaritmo_Expresion,
-
+    clean_Expresion,
+    
 }

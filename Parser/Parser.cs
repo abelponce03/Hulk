@@ -21,10 +21,9 @@ class Parser
         }
         while (token.Tipo != Tipo_De_Token.Final);
         _tokens = tokens.ToArray();
-        if (tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.punto_y_coma) errores.Add($"! SYNTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 1].Texto}>");
+        if (tokens.Count > 0 && tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.punto_y_coma) errores.Add($"! SYNTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 1].Texto}>");
         errores.AddRange(Analizador.Error);
     }
-
 
     private Token Tomar(int offset)
     {
@@ -44,15 +43,16 @@ class Parser
     {
         if (Verificandose.Tipo == tipo) return Proximo_Token();
         else if (_tokens.Length == 1) errores.Add($"! SYNTAX ERROR : Not find <{tipo}> in <{_posicion}>");
-        else errores.Add($"! SYNTAX ERROR : Not find <{tipo}> after <{Tomar(-1).Texto}> in position <{_posicion}>");
+        else throw new Exception($"! SYNTAX ERROR : Not find <{tipo}> after <{Tomar(-1).Texto}> in position <{_posicion}>");
         return new Token(tipo, Verificandose.Posicion, null, null);
 
     }
     public Arbol Parse()
     {
+        if(_tokens.Length == 0) return new Arbol(errores, null, null);
         var expresion = Parse_Expresion();
         var final = Match(Tipo_De_Token.punto_y_coma);
-        if (_posicion < _tokens.Length - 1)
+        if (_posicion -1 < _tokens.Length - 1)
         {
             string fragmento = "";
             for(int i = _posicion; i < _tokens.Length; i++)
@@ -167,7 +167,7 @@ class Parser
         else
         {
             var identificador = Proximo_Token();
-            return new Variable(identificador);
+            return new Literal(identificador, identificador.Texto);
         }
     }
     public Expresion Parse_Let_in_Expresion()
@@ -223,6 +223,11 @@ class Parser
     {
         switch (Verificandose.Tipo)
         {
+            case Tipo_De_Token.clean_keyword:
+                {
+                    var keyword = Proximo_Token();
+                    return new Clean(keyword);
+                }
             case Tipo_De_Token.Parentesis_Abierto:
                 {
                     var left = Proximo_Token();

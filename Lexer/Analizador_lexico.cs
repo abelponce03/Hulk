@@ -1,5 +1,4 @@
 using System.ComponentModel.Design;
-
 namespace Hulk;
 // Aqui voy analizando la entrada del usuario char por char
 class Analizador_lexico
@@ -8,6 +7,7 @@ class Analizador_lexico
     private int _posicion;
     private List<string> errores = new List<string>();
     public List<string> Error => errores;
+    
     //constructor de la clase
     public Analizador_lexico(string text)
     {
@@ -34,7 +34,6 @@ class Analizador_lexico
 
         int inicio = _posicion;
 
-        //problemas con string
         if (charete == '"')
         {
             if (IsString())
