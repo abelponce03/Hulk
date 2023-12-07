@@ -8,19 +8,25 @@ class Parser
 {
     private readonly Token[] _tokens;// todos los tokens se guardan aqui
     private int _posicion;
+    //lista donde se van a guardar errores que se vayan encontrando
     public List<string> errores = new List<string>();
     public Parser(string texto)
     {
+        
         var tokens = new List<Token>();
+        //se crea el objeto analizador lexico donde se va a convertir la entrada del usuario en tokens
         var Analizador = new Analizador_lexico(texto);
         Token token;
         do
         {
             token = Analizador.Proximo_Token();
+            //si es un espacio, un token malo que sea considerado un error lexico
             if (token.Tipo != Tipo_De_Token.Espacio && token.Tipo != Tipo_De_Token.Malo && token.Tipo != Tipo_De_Token.Final) tokens.Add(token);
         }
         while (token.Tipo != Tipo_De_Token.Final);
+        //todos los token creados se guardaran en el array de _tokens 
         _tokens = tokens.ToArray();
+        //si el ultimo token no es un punto y coma devolver el error
         if (tokens.Count > 0 && tokens[_tokens.Length - 1].Tipo != Tipo_De_Token.punto_y_coma) errores.Add($"! SYNTAX ERROR : Expected in the end off line <{";"}> not <{tokens[_tokens.Length - 1].Texto}>");
         errores.AddRange(Analizador.Error);
     }
@@ -39,6 +45,7 @@ class Parser
         _posicion++;
         return token;
     }
+    //verificar que el token que se analiza es el q tu necesitas
     public Token Match(Tipo_De_Token tipo)
     {
         if (Verificandose.Tipo == tipo) return Proximo_Token();
@@ -47,11 +54,13 @@ class Parser
         return new Token(tipo, Verificandose.Posicion, null, null);
 
     }
+    //metodo que va a devolver el AST
     public Arbol Parse()
     {
         if(_tokens.Length == 0) return new Arbol(errores, null, null);
         var expresion = Parse_Expresion();
         var final = Match(Tipo_De_Token.punto_y_coma);
+        //error de contexto ya que despues del punto y coma lo demas no se tiene en cuenta
         if (_posicion -1 < _tokens.Length - 1)
         {
             string fragmento = "";
@@ -67,6 +76,7 @@ class Parser
         }
         return new Arbol(errores, expresion, final);
     }
+    //aqui se verifica si es una llamada de funcion
     public Expresion Parse_Expresion()
     {
         if (Verificandose.Tipo is Tipo_De_Token.function_Keyword)
@@ -75,15 +85,17 @@ class Parser
         }
         return Parse_Expresion_Binaria();
     }
+    //parseo de declaracion de funciones
     private Declaracion_Funcion Parse_Declaracion_Funcion()
     {
-        var keyword = Match(Tipo_De_Token.function_Keyword);
+        Match(Tipo_De_Token.function_Keyword);
         var nombre = Match(Tipo_De_Token.Identificador);
         var parametros = Parseo_parametros();
-        var implicacion = Match(Tipo_De_Token.Implicacion);
+        Match(Tipo_De_Token.Implicacion);
         var cuerpo = Parse_Expresion();
         var declaracion_Funcion = new Declaracion_Funcion(nombre.Texto, parametros, cuerpo);
-
+        
+        //condicion para que no puedan crear funciones con el nombre de sen cos log
         if (!Biblioteca.Functions.ContainsKey(nombre.Texto) && errores.Count == 0 && nombre.Texto != "sen(x)" && nombre.Texto != "cos(x)" && nombre.Texto != "log(x)")
         {
             Biblioteca.Functions.Add(nombre.Texto, declaracion_Funcion);
@@ -95,10 +107,12 @@ class Parser
 
         return declaracion_Funcion;
     }
+    //parseo de parametros de funciones
     public List<string> Parseo_parametros()
     {
         Match(Tipo_De_Token.Parentesis_Abierto);
         var parametros = new List<string>();
+        //se verifica que ya no existan mas parametros
         if (Verificandose.Tipo is Tipo_De_Token.Parentesis_Cerrado)
         {
             Proximo_Token();
@@ -124,6 +138,7 @@ class Parser
         Proximo_Token();
         return parametros;
     }
+    //parseo de llamdas de una funcion
     private Expresion Parse_LLamada_Funcion(string identificador)
     {
         Proximo_Token();
@@ -131,6 +146,7 @@ class Parser
 
         Match(Tipo_De_Token.Parentesis_Abierto);
 
+       //se creaba un bucle al dejar una llamada de funcion sin cerrar parentesis
         int evitar_bucle = 0;
         while (true)
         {
@@ -157,6 +173,7 @@ class Parser
 
         return new LLamada_Funcion(identificador, parametros);
     }
+    //distincion de un token identificador entre variable y llamada de funcion
     private Expresion Parse_Variable_O_LLamada_Funcion()
     {
         if (Verificandose.Tipo == Tipo_De_Token.Identificador
@@ -170,6 +187,7 @@ class Parser
             return new Literal(identificador, identificador.Texto);
         }
     }
+    //parsear la expresion let in 
     public Expresion Parse_Let_in_Expresion()
     {
         var let_id = Match(Tipo_De_Token.let_Keyword);
@@ -183,7 +201,8 @@ class Parser
         var keyword = Match(Tipo_De_Token.Identificador);
         var igual = Match(Tipo_De_Token.Igual);
         var asignar = Parse_Expresion();
-
+         
+         //esto es x si se asignan a otras variables un valor en el mismo let 
         if (Verificandose.Tipo == Tipo_De_Token.coma)
         {
             var coma = Match(Tipo_De_Token.coma);
@@ -197,6 +216,9 @@ class Parser
     }
     private Expresion Parse_Expresion_Binaria(int parentPrecedence = 0)
     {
+        // este metodo verifica primero llamando al metodo orden de prioridad la prioridad que tendria el token
+        //si esta es 0 pasa al siguiente tipo de parseo
+        //se comienza por las expresiones unarias q tienen la mayor prioridad
         Expresion left;
         var expresion_unaria = Verificandose.Tipo.Prioridad_Operadores_Unarios();
 
@@ -206,8 +228,12 @@ class Parser
             var right = Parse_Expresion_Binaria(expresion_unaria);
             left = new Expresion_Unaria(operador, right);
         }
+        //esto va al parser fundamental de expresiones donde segun el tipo de cada token se crearan las expresiones
         else left = Parseo_Fundamental_Expresion();
-
+        //proceso similar que el de las expresiones unarias 
+        //parseo de expresiones binarias
+        //segun el operador entre las expresiones
+        //la prioridad que va a tener 
         while (true)
         {
             var precedence = Verificandose.Tipo.Prioridad_Operadores_Binarios();
@@ -219,15 +245,18 @@ class Parser
         }
         return left;
     }
+    //parseo segun el tipo de token 
     private Expresion Parseo_Fundamental_Expresion()
     {
         switch (Verificandose.Tipo)
         {
+            //expresion que al evaluarse limpia el diccionario de funciones
             case Tipo_De_Token.clean_keyword:
                 {
                     var keyword = Proximo_Token();
                     return new Clean(keyword);
                 }
+                //expresion parentesis
             case Tipo_De_Token.Parentesis_Abierto:
                 {
                     var left = Proximo_Token();
@@ -235,6 +264,7 @@ class Parser
                     var right = Match(Tipo_De_Token.Parentesis_Cerrado);
                     return new Parentesis(left, expresion, right);
                 }
+                //expresiones booleanas
             case Tipo_De_Token.True_Keyword:
             case Tipo_De_Token.False_Keyword:
                 {
@@ -242,10 +272,12 @@ class Parser
                     var valor = keyword.Tipo == Tipo_De_Token.True_Keyword;
                     return new Literal(keyword, valor);
                 }
+                //identificadores
             case Tipo_De_Token.Identificador:
                 {
                     return Parse_Variable_O_LLamada_Funcion();
                 }
+                //parseo de condicionales
             case Tipo_De_Token.if_Keyword:
                 {
                     var keyword = Proximo_Token();
@@ -266,12 +298,14 @@ class Parser
                         errores.Add($" SEMANTIC ERROR : Invalid expresion <{_else.Tipo}> in position <{_posicion}> expected <{"else_Expresion"}>");
                     return new IF(keyword, op_parentesis, parentesis, cl_parentesis, expresion, _else);
                 }
+                //else expresion que complemta al if expresion
             case Tipo_De_Token.else_Keyword:
                 {
                     var keyword = Proximo_Token();
                     var expresion = Parse_Expresion();
                     return new Else(keyword, expresion);
                 }
+                //expresion que imprime en pantalla su argumento
             case Tipo_De_Token.print_Keyword:
                 {
                     var keyword = Proximo_Token();
@@ -288,28 +322,33 @@ class Parser
                     var cl_parentesis = Proximo_Token();
                     return new Print(keyword, op_parentesis, expresion, cl_parentesis);
                 }
+                //declaracion de variable
             case Tipo_De_Token.let_Keyword:
                 {
                     return Parse_Let_in_Expresion();
                 }
+                //ambito de definicion de variables
             case Tipo_De_Token.in_Keyword:
                 {
                     var keyword = Match(Tipo_De_Token.in_Keyword);
                     var expresion = Parse_Expresion();
                     return new In(expresion);
                 }
+                //PI de la case Math 
             case Tipo_De_Token.PI_Keyword:
                 {
                     var PI = Match(Tipo_De_Token.PI_Keyword);
                     var valor = Math.PI;
                     return new Literal(PI, valor);
                 }
+                //evaluacion de string
             case Tipo_De_Token.String:
                 {
                     var keyword = Match(Tipo_De_Token.String);
                     var valor = keyword.Texto;
                     return new Literal(keyword, valor);
                 }
+                //funcion sen
             case Tipo_De_Token.sen_Keyword:
                 {
                     var keyword = Proximo_Token();
@@ -326,6 +365,7 @@ class Parser
                     var cl_parentesis = Proximo_Token();
                     return new Sen(keyword, op_parentesis, expresion, cl_parentesis);
                 }
+                //funcion coseno
             case Tipo_De_Token.cos_Keyword:
                 {
                     var keyword = Proximo_Token();
@@ -342,6 +382,7 @@ class Parser
                     var cl_parentesis = Proximo_Token();
                     return new Cos(keyword, op_parentesis, expresion, cl_parentesis);
                 }
+                //funcion logaritmo
             case Tipo_De_Token.logaritmo_Keyword:
                 {
                     var keyword = Proximo_Token();
@@ -358,6 +399,7 @@ class Parser
                     var cl_parentesis = Proximo_Token();
                     return new Logaritmo(keyword, op_parentesis, expresion, cl_parentesis);
                 }
+                //por defecto se considerara que el token es un numero y es una expresion literal
             default:
                 {
                     var token_num = Match(Tipo_De_Token.Numero);

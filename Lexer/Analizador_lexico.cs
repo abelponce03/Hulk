@@ -13,14 +13,18 @@ class Analizador_lexico
     {
         texto = text;
     }
+    //char que se va a estar verificando
     private char charete => Tomar(0);
     private char Siguiente_char => Tomar(1);
+
+    //metodo para ir tomando cada char del texto
     private char Tomar(int offset)
     {
         int index = _posicion + offset;
         if (index >= texto.Length) return '\0';
         else return texto[index];
     }
+    //metodo para recorrer el texto
     public void Siguiente()
     {
         _posicion++;
@@ -142,6 +146,7 @@ class Analizador_lexico
 
         return new Token(Tipo_De_Token.Malo, _posicion++, texto.Substring(_posicion - 1, 1), null);
     }
+    
     private bool IsString()
     {
         var count = 0;

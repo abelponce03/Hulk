@@ -16,37 +16,50 @@ namespace Hulk
 
             while (true)
             {
+                //limpieza de variables en stack y diccionarios
+                Biblioteca.Pila.Clear();
+                Biblioteca.Variables.Clear();
+                //try catch para errores que yo he definido en evaluador
                 try
                 {
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("> ");
                     string? Entrada = Console.ReadLine();
+                    //si la entrada es vacia termina el proceso
                     if (string.IsNullOrWhiteSpace(Entrada)) return;
 
+                    //creacion del objeto parser donde se crea cada expresion del arbol
                     var Parser = new Parser(Entrada);
+                    //llamada al metodo que parsea cada token y devuelve expresiones
                     var Arbol = Parser.Parse();
 
                     if (!Arbol.Errores.Any())
                     {
+                        //si el usuario introduce  clean se eliminan todas las funciones en el diccionario 
                         if (Arbol.Rama is Clean)
                         {
                             Biblioteca.Functions.Clear();
-                            Biblioteca.Variables.Clear();
                             Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.WriteLine("LIBRARY IS CLEAN");
                             continue;
                         }
+                        //si es una declaracion de funcion pasa a la proxima entrada 
                         if (Arbol.Rama is Declaracion_Funcion)
                         {
                             continue;
                         }
+                        //creacion del objeto evaluador
                         var e = new Evaluador(Arbol.Rama);
+                        //llamada al metodo evaluar donde se van a evaluar cada nodo del arbol
                         var resultado = e.Evaluar();
+                        
+                        //color para ver en consola de la salida
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(resultado);
                     }
                     else
                     {
+                        //implementacion de colores distintivos para  cada error
                         foreach (var error in Arbol.Errores)
                         {
                             string[] mensaje = error.Split();
@@ -80,6 +93,7 @@ namespace Hulk
                 }
                 catch (Exception e)
                 {
+
                     string[] mensaje = e.ToString().Split();
                     for (int i = 0; i < mensaje.Length; i++)
                     {

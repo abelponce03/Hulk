@@ -1,5 +1,6 @@
 namespace Hulk;
 
+//string, identificadores y numeros se veran representados com un literal
 sealed class Literal : Expresion
 {
     public Literal(Token literal, object valor)

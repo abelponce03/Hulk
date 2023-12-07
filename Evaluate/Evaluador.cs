@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 namespace Hulk;
 class Evaluador
 {
+    //contador para el stackoverflow
     private int Contador;
     private readonly Expresion _rama;
     public Evaluador(Expresion rama)
@@ -21,6 +22,7 @@ class Evaluador
         {
             throw new Exception("! OVERFLOW ERROR : Hulk Stack overflow");
         }
+        // si es un indentificador y busca en su diccionario correspondiente, si es un numero retorna su valor
         if (nodo is Literal a)
         {
             if (a._Literal.Tipo == Tipo_De_Token.Identificador)
@@ -31,6 +33,7 @@ class Evaluador
             }
             return a.Valor;
         }
+        // evaluar izquierda y derecha y ver el operador de la expresion binaria 
         if (nodo is Expresion_Binaria b)
         {
             var left = Evaluar_Expresion(b.Left);
@@ -126,6 +129,7 @@ class Evaluador
                 default: throw new Exception($"! SEMANTIC ERROR : Unexpected binary operator <{b.Operador.Tipo}>");
             }
         }
+        //evaluar expresion a la derecha y ver el operador de la expresion
         if (nodo is Expresion_Unaria c)
         {
             var right = Evaluar_Expresion(c.Right);
@@ -141,18 +145,22 @@ class Evaluador
                 default: throw new Exception($"! SEMANTIC ERROR : Invalid unary operator <{c.Operador.Tipo}>");
             }
         }
+        
         if (nodo is LLamada_Funcion d)
         {
+            //verificar que se encuentre declarada esa funcion
             if (!Biblioteca.Functions.ContainsKey(d.Nombre))
             {
                 throw new Exception($"! FUNCTION ERROR : Function <{d.Nombre}> is not defined");
             }
+            // tomar la declaracion de funcion segun el identificador
             var Declaracion_Funcion = Biblioteca.Functions[d.Nombre];
+            //ver si concuerda el numero de parametros
             if (Declaracion_Funcion.Parametros.Count != d.Parametros.Count)
             {
                 throw new Exception($"! FUNCTION ERROR : Function <{d.Nombre}> does not have <{d.Parametros.Count}> parameters but has <{Biblioteca.Functions[d.Nombre].Parametros.Count}> parameters");
             }
-
+            //crear diccionario temporal para asi crear un ambito local de variable mas adelante
             var temp = new Dictionary<string, object>();
 
             var parametros = d.Parametros;
@@ -164,27 +172,32 @@ class Evaluador
                 var expresion = Evaluar_Expresion(parametros[i]);
                 temp.Add(id, expresion);
             }
-
+            //vamos a ir anadiendo a un stack 
             Biblioteca.Pila.Push(temp);
-
+            
+            //se evaluan con los valores de la variable temporal
             var valor = Evaluar_Expresion(Declaracion_Funcion.Cuerpo);
-
+            
+            //luego se van sacando estos diccionarios hasta quedarse con el valor original de la variable
             Biblioteca.Pila.Pop();
 
             return valor;
         }
+        //evaluacion de expresion seno
         if (nodo is Sen e)
         {
             var expresion = Evaluar_Expresion(e._expresion);
             var valor = Math.Sin((double)expresion);
             return valor;
         }
+        //evaluacion de expresion cos
         if (nodo is Cos f)
         {
             var expresion = Evaluar_Expresion(f._expresion);
             var valor = Math.Cos((double)expresion);
             return valor;
         }
+        //evaluacion de expresion let in
         if (nodo is Let_in g)
         {
             var let = Evaluar_Expresion(g._Let);
@@ -194,35 +207,40 @@ class Evaluador
         if (nodo is Let h)
         {
             var valor = Evaluar_Expresion(h.Asignacion);
+            //asignar un valor a la variable y guardarlo en el diccionario
             Biblioteca.Variables[h.Identificador.Texto] = valor;
+            //si la expresion let no tiene otra asignacion dentro de ella
             if (h._Let_expresion is null)
             {
                 return valor;
             }
             return Evaluar_Expresion(h._Let_expresion);
         }
-
+        //evaluacion del logaritmo
         if (nodo is Logaritmo x)
         {
             var expresion = Evaluar_Expresion(x._expresion);
             var valor = Math.Log((double)expresion);
             return valor;
         }
-
+        
         if (nodo is IF j)
         {
-            var condicion = Evaluar_Expresion(j.Condicion);
-            if (condicion.GetType() != typeof(bool)) throw new Exception("! SEMANTIC ERROR : If-ELSE expressions must have a boolean condition");
 
+            var condicion = Evaluar_Expresion(j.Condicion);
+            //verificacion de tipos en condicion de if expresion
+            if (condicion.GetType() != typeof(bool)) throw new Exception("! SEMANTIC ERROR : If-ELSE expressions must have a boolean condition");
+            
+            //si es true retorna el objeto de la expresion correspondite a la condicion
             if ((bool)condicion) return Evaluar_Expresion(j._expresion);
 
             else
             {
-
+                //retornar el objeto de la expresion else
                 return Evaluar_Expresion(j._Else);
             }
         }
-
+       
         if (nodo is In k) return Evaluar_Expresion(k._expresion);
 
         if (nodo is Print l) return Evaluar_Expresion(l._expresion);
@@ -234,6 +252,7 @@ class Evaluador
         throw new Exception($"! SYNTAX ERROR : Unexpected node <{nodo}>");
 
     }
+    //verificacion de tipos para cada evaluacion de expresiones
     private static void Verificar_tipos(Expresion_Binaria b, object left, object right)
     {
         if (left.GetType() != right.GetType())
